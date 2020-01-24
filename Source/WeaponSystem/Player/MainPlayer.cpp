@@ -12,6 +12,7 @@
 #include "WeaponSystem/Weapon/PickupInterface.h"
 #include "Components/CapsuleComponent.h" 
 #include <Components/InputComponent.h>
+#include "../Interact/InteractInterface.h"
 
 
 // Sets default values
@@ -33,12 +34,19 @@ AMainPlayer::AMainPlayer()
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanJump = true;
 
-
-
 	CurrentlyCarriedBullets = 20;
 	MaxBulletsCarried = 99;
 	MaxClipCarried = 15;
 	CurrentlyCarriedClip = 5;
+
+	// declare trigger capsule
+	TriggerCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger Capsule"));
+	TriggerCapsule->InitCapsuleSize(55.f, 96.0f);;
+	TriggerCapsule->SetCollisionProfileName(TEXT("Trigger"));
+	TriggerCapsule->SetupAttachment(RootComponent);
+
+	TriggerCapsule->OnComponentBeginOverlap.AddDynamic(this, &AMainPlayer::OnOverlapBegin);
+	TriggerCapsule->OnComponentEndOverlap.AddDynamic(this, &AMainPlayer::OnOverlapEnd);
 }
 
 
@@ -47,21 +55,23 @@ void AMainPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	//Attach the gun
-	if (CurrentWeapon != nullptr)
-	{
-		FActorSpawnParameters SpawnGun;
-		SpawnGun.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	//if (CurrentWeapon != nullptr)
+	//{
+	//	FActorSpawnParameters SpawnGun;
+	//	SpawnGun.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-		//Spawn the weapon
-		weapon = GetWorld()->SpawnActor<AWeaponBase>(CurrentWeapon, FVector(0.f, 0.f, 0.f), FRotator(0.f, 0.f, 0.f), SpawnGun);
+	//	//Spawn the weapon
+	//	weapon = GetWorld()->SpawnActor<AWeaponBase>(CurrentWeapon, FVector(0.f, 0.f, 0.f), FRotator(0.f, 0.f, 0.f), SpawnGun);
+	//	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor - Dont mind the red it funks
+	//	weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false), TEXT("WeaponSocket"));
 
-		//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor - Dont mind the red it funks
-		weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false), TEXT("WeaponSocket"));
-		weapon->Player = this;
+	//	// remove collision
+	//	weapon->OnEquipped();
 
-	
+	//	weapon->Player = this;
 
-	}
+
+	//}
 }
 
 
@@ -97,7 +107,6 @@ void AMainPlayer::Tick(float DeltaTime)
 
 }
 
-
 // Called to bind functionality to input
 void AMainPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -116,6 +125,12 @@ void AMainPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainPlayer::ReloadWeapon);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMainPlayer::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMainPlayer::StopAutoFire);
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMainPlayer::OnInteract);
+	PlayerInputComponent->BindAction("PrimaryWeapon1", IE_Pressed, this, &AMainPlayer::EquipPrimaryWeapon1);
+	PlayerInputComponent->BindAction("PrimaryWeapon2", IE_Pressed, this, &AMainPlayer::EquipPrimaryWeapon2);
+	PlayerInputComponent->BindAction("SecondaryWeapon1", IE_Pressed, this, &AMainPlayer::EquipSecondaryWeapon1);
+	PlayerInputComponent->BindAction("SecondaryWeapon2", IE_Pressed, this, &AMainPlayer::EquipSecondaryWeapon2);
+
 }
 
 
@@ -131,65 +146,220 @@ FVector AMainPlayer::GetPawnViewLocation() const
 
 void AMainPlayer::StartFire()
 {
-	if (CurrentWeapon != nullptr && weapon != nullptr && weapon->AmmoComp != nullptr)
+	if (CurrentWeapon)
 	{
-		if (weapon->FireMode == EFireMode::ESingle)
+		switch (CurrentWeapon->FireMode)
 		{
-			weapon->FireSingle();
-		}
-		if (weapon->FireMode == EFireMode::ESpread)
-		{
-			weapon->FireSpread();
-		}
-		if (weapon->FireMode == EFireMode::EBurst)
-		{
-			weapon->StartBurstTimer();
-		}
-		if (weapon->FireMode == EFireMode::EAuto)
-		{
-			weapon->StartAutoFireTimer();
+		case EFireMode::ESingle:
+			CurrentWeapon->FireSingle();
+			break;
+		case EFireMode::ESpread:
+			CurrentWeapon->FireSpread();
+			break;
+		case EFireMode::EBurst:
+			CurrentWeapon->StartBurstTimer();
+			break;
+		case EFireMode::EAuto:
+			CurrentWeapon->StartAutoFireTimer();
+			break;
+		default:
+			break;
 		}
 	}
-
 }
 
 
 void AMainPlayer::StopAutoFire()
 {
-	if (weapon->FireMode == EFireMode::EAuto)
+	if (CurrentWeapon)
 	{
-		weapon->StopAutoFireTimer();
+		if (CurrentWeapon->FireMode == EFireMode::EAuto)
+		{
+			CurrentWeapon->StopAutoFireTimer();
+		}
 	}
 }
 
 
 void AMainPlayer::ReloadWeapon()
 {
-	if (weapon != nullptr)
+	if (CurrentWeapon)
 	{
-		if (weapon->AmmoType == EAmmoType::EBullets) 
+		switch (CurrentWeapon->AmmoType)
 		{
-			CurrentlyCarriedBullets = weapon->Reload(CurrentlyCarriedBullets);
-		}
-		if (weapon->AmmoType == EAmmoType::EClips)
-		{
-			CurrentlyCarriedClip = weapon->Reload(CurrentlyCarriedClip);
-		}
-		if (weapon->AmmoType == EAmmoType::EShells)
-		{
-			CurrentlyCarriedShells = weapon->Reload(CurrentlyCarriedShells);
+		case EAmmoType::EBullets:
+			CurrentlyCarriedBullets = CurrentWeapon->Reload(CurrentlyCarriedBullets);
+			break;
+		case EAmmoType::EClips:
+			CurrentlyCarriedClip = CurrentWeapon->Reload(CurrentlyCarriedClip);
+			break;
+		case EAmmoType::EShells:
+			CurrentlyCarriedShells = CurrentWeapon->Reload(CurrentlyCarriedShells);
+			break;
+		default:
+			break;
 		}
 	}
-
 }
-
 
 
 void AMainPlayer::WeaponZoom(float Value)
 {
-	if (CurrentWeapon != nullptr && weapon != nullptr)
+	if (CurrentWeapon)
 	{
-		weapon->Zoom();
+		CurrentWeapon->Zoom();
 	}
 }
 
+void AMainPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && (OtherActor != this))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlap Begin : %s"), *OtherActor->GetName());
+
+		if (OtherActor != OverlappedActor)
+		{
+			//if you start overlapping with a new actor while already overlapping with another,
+			//force an EndInteract on the first actor you interacted with in favor of the new one.
+			if (OverlappedActor)
+			{
+				IInteractInterface* Interface = Cast<IInteractInterface>(OverlappedActor);
+				if (Interface)
+				{
+					Interface->Execute_OnEndInteract(OverlappedActor);
+				}
+			}
+
+			//if not overlapping with another actor,
+			//either through forcing an EndInteract like above
+			//or through a new single overlap,
+			//start Interaction with the new actor.
+			IInteractInterface* Interface = Cast<IInteractInterface>(OtherActor);
+			if (Interface)
+			{
+				Interface->Execute_OnBeginInteract(OtherActor);
+			}
+			OverlappedActor = OtherActor;
+		}
+
+	}
+}
+
+void AMainPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor && (OtherActor != this))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Overlap End : %s"), *OtherActor->GetName());
+
+		if (OverlappedActor)
+		{
+			IInteractInterface* Interface = Cast<IInteractInterface>(OverlappedActor);
+			if (Interface)
+			{
+				Interface->Execute_OnEndInteract(OverlappedActor);
+			}
+		}
+		OverlappedActor = nullptr;
+	}
+}
+
+void AMainPlayer::OnInteract()
+{
+	if (OverlappedActor)
+	{
+		IInteractInterface* Interface = Cast<IInteractInterface>(OverlappedActor);
+		if (Interface)
+		{
+			Interface->Execute_OnInteract(OverlappedActor);
+			//UE_LOG(LogTemp, Warning, TEXT("OverlappedActor : %s"), *OverlappedActor->GetName());
+
+			if (AWeaponBase* OverlappedWeapon = Cast<AWeaponBase>(OverlappedActor))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Picked up weapon : %s"), *OverlappedActor->GetName());
+				PickupWeapon(OverlappedWeapon);
+			}
+		}
+	}
+}
+
+void AMainPlayer::PickupWeapon(AWeaponBase* Weapon)
+{
+	switch (Weapon->WeaponCategory)
+	{
+	case EWeaponCategory::EPrimary:
+		if (!PrimaryWeapon1)
+		{
+			PrimaryWeapon1 = Weapon;
+		}
+		else if (!PrimaryWeapon2)
+		{
+			PrimaryWeapon2 = Weapon;
+		}
+		// if both are occupied, replace first one to new one
+		// developer note: this last else needs to be changed into a
+		// "drop and replace" system, not currently implemented.
+		else 
+		{
+			PrimaryWeapon1 = Weapon;
+		}
+		break;
+	case EWeaponCategory::ESecondary:
+		if (!SecondaryWeapon1)
+		{
+			SecondaryWeapon1 = Weapon;
+		}
+		else if (!SecondaryWeapon2)
+		{
+			SecondaryWeapon2 = Weapon;
+		}
+		// if both are occupied, replace first one to new one
+		// developer note: this last else needs to be changed into a
+		// "drop and replace" system, not currently implemented.
+		else 
+		{
+			SecondaryWeapon1 = Weapon;
+		}
+		break;
+	default:
+		break;
+	}
+	Weapon->SetActorHiddenInGame(true);
+	Weapon->SetActorEnableCollision(false);
+}
+
+void AMainPlayer::EquipPrimaryWeapon1()
+{
+	EquipWeapon(PrimaryWeapon1);
+}
+
+void AMainPlayer::EquipPrimaryWeapon2()
+{
+	EquipWeapon(PrimaryWeapon2);
+}
+
+void AMainPlayer::EquipSecondaryWeapon1()
+{
+	EquipWeapon(SecondaryWeapon1);
+}
+
+void AMainPlayer::EquipSecondaryWeapon2()
+{
+	EquipWeapon(SecondaryWeapon2);
+}
+
+void AMainPlayer::EquipWeapon(AWeaponBase* Weapon)
+{
+	if (CurrentWeapon)
+		CurrentWeapon->SetActorHiddenInGame(true);
+
+	if (!Weapon)
+	{
+		CurrentWeapon = Weapon;
+		return;
+	}
+
+	CurrentWeapon = Weapon;
+	CurrentWeapon->SetActorHiddenInGame(false);
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("WeaponSocket"));
+	CurrentWeapon->Player = this;
+}

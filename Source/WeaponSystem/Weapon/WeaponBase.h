@@ -7,6 +7,8 @@
 #include "WeaponSystem/EnumClasses.h"
 #include "WeaponSystem/Player/MainPlayer.h"
 #include <Components/PrimitiveComponent.h>
+#include <Components/SphereComponent.h>
+#include "../Interact/InteractInterface.h"
 #include "WeaponBase.generated.h"
 
 class ULineTraceComponent;
@@ -16,7 +18,7 @@ class UZoomComponent;
 class UAmmoComponent;
 
 UCLASS()
-class WEAPONSYSTEM_API AWeaponBase : public AActor
+class WEAPONSYSTEM_API AWeaponBase : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
 
@@ -53,6 +55,9 @@ public:
 	// The time in seconds it takes to reload the weapon
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats|Reload")
 		float ReloadTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats")
+		TEnumAsByte<EWeaponCategory> WeaponCategory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats")
 		TEnumAsByte<EFireMode> FireMode;
@@ -100,6 +105,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GunStats")
 		float HalfConeDegree = 10.f;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
+		USphereComponent* CollisionComponent;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
+		bool bOverlapping;
 
 protected:
 
@@ -146,5 +156,17 @@ public:
 	UFUNCTION(Category = "Weapon|Reload")
 		int Reload(int CurrentHeldAmmo);
 
+	UFUNCTION(BlueprintCallable)
+		void OnEquipped();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
+		void OnInteract();
+		virtual void OnInteract_Implementation();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
+		void OnBeginInteract();
+		virtual void OnBeginInteract_Implementation();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
+		void OnEndInteract();
+		virtual void OnEndInteract_Implementation();
 
 };

@@ -4,6 +4,12 @@
 #include "Engine/UserDefinedEnum.h"
 #include "EnumClasses.generated.h"
 
+UENUM()
+enum class EWeaponCategory : uint8
+{
+	EPrimary		UMETA(DisplayName = "Primary Weapon", ToolTip = "This weapon is a primary weapon."),
+	ESecondary		UMETA(DisplayName = "Secondary Weapon", ToolTip = "This weapon is a secondary weapon.")
+};
 
 UENUM()
 enum class EFireMode : uint8

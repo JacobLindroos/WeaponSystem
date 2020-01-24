@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include <Components/CapsuleComponent.h>
 #include "MainPlayer.generated.h"
+
+class AWeaponBase;
 
 UCLASS()
 class WEAPONSYSTEM_API AMainPlayer : public ACharacter
@@ -30,10 +33,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		class USpringArmComponent* SpringArmComp;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-		TSubclassOf<class AWeaponBase> CurrentWeapon;
-
-
 	UPROPERTY(EditAnywhere, Category = "AmmoStats")
 		int MaxBulletsCarried;
 
@@ -51,9 +50,30 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "AmmoStats")
 		int CurrentlyCarriedShells;
-	
+
+	// create trigger capsule
+	UPROPERTY(VisibleAnywhere, Category = "Trigger Capsule")
+		class UCapsuleComponent* TriggerCapsule;
+
 	UPROPERTY()
-		AWeaponBase* weapon;
+		AActor* OverlappedActor;
+
+public:
+
+	UPROPERTY(VisibleAnywhere)
+		AWeaponBase* CurrentWeapon;
+
+	UPROPERTY(VisibleAnywhere)
+		AWeaponBase* PrimaryWeapon1;
+
+	UPROPERTY(VisibleAnywhere)
+		AWeaponBase* PrimaryWeapon2;
+
+	UPROPERTY(VisibleAnywhere)
+		AWeaponBase* SecondaryWeapon1;
+
+	UPROPERTY(VisibleAnywhere)
+		AWeaponBase* SecondaryWeapon2;
 
 public:
 	// Called every frame
@@ -77,4 +97,29 @@ public:
 
 	UFUNCTION()
 		void WeaponZoom(float Value);
+
+	// pick up and equip
+	UFUNCTION()
+		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Interact")
+		void OnInteract();
+
+	UFUNCTION()
+		void PickupWeapon(AWeaponBase* Weapon);
+
+	UFUNCTION()
+		void EquipPrimaryWeapon1();
+	UFUNCTION()
+		void EquipPrimaryWeapon2();
+	UFUNCTION()
+		void EquipSecondaryWeapon1();
+	UFUNCTION()
+		void EquipSecondaryWeapon2();
+	UFUNCTION()
+		void EquipWeapon(AWeaponBase* Weapon);
+
 };

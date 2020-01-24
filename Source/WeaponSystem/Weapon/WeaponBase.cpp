@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Engine/Engine.h"
 #include "WeaponBase.h"
+#include "Engine/Engine.h"
 #include "AmmoComponent.h"
 #include "LineTraceComponent.h"
 #include "RecoilComponent.h"
@@ -15,12 +15,21 @@ AWeaponBase::AWeaponBase()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	   
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+	CollisionComponent->InitSphereRadius(15.0f);
+	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("BlockAll"));
+
+	//CollisionComponent->SetupAttachment(RootComponent);
+	RootComponent = CollisionComponent;
 
 	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
+	GunMesh->SetupAttachment(CollisionComponent);
 
 	MuzzleSocketName = "MuzzleSocket";
 	TracerTargetName = "Target";
 	RateOfFire = 600;
+
 }
 
 
@@ -201,6 +210,26 @@ int AWeaponBase::Reload(int CurrentHeldAmmo)
 
 
 	return CurrentHeldAmmo;
+}
+
+void AWeaponBase::OnEquipped()
+{
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AWeaponBase::OnInteract_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnInteract : %s"), *this->GetName())
+}
+
+void AWeaponBase::OnBeginInteract_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnBeginInteract : %s"), *this->GetName())
+}
+
+void AWeaponBase::OnEndInteract_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnEndInteract : %s"), *this->GetName())
 }
 
 
