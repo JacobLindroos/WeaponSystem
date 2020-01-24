@@ -33,22 +33,22 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		class USpringArmComponent* SpringArmComp;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int MaxBulletsCarried;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int CurrentlyCarriedBullets;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int MaxClipCarried;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int CurrentlyCarriedClip;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int MaxShells;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int CurrentlyCarriedShells;
 
 	// create trigger capsule

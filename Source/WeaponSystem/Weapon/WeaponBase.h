@@ -24,92 +24,106 @@ class WEAPONSYSTEM_API AWeaponBase : public AActor, public IInteractInterface
 
 protected:
 
-	//The collision comp
 	UPROPERTY(VisibleAnywhere, Category = "Collider")
 		class UBoxComponent* CollisionComp;
 
-	//The sound
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay", Meta = (ToolTip = "When firing the gun, if a sound is desired, add it here."))
 		class USoundBase* FireSound;
 
 public:
+
+	//Just some pointers, do not touch please.
+
 	FTimerHandle TimeHandler;
 	UAmmoComponent* AmmoComp;
 	ULineTraceComponent* LineComp;
 	URecoilComponent* RecoilComp;
 	UZoomComponent* ZoomComp;
 
-	//The mesh of the gun
-	UPROPERTY(VisibleAnywhere, Category = "Mesh")
+
+
+
+	UPROPERTY(VisibleAnywhere, Category = "Mesh", Meta = (ToolTip = "The mesh of the gun, nothing more fun than that."))
 		class USkeletalMeshComponent* GunMesh;
 
-	// Sets default values for this actor's properties
-	AWeaponBase();
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+
+	UPROPERTY()
 		AMainPlayer* Player;
 
-	//The name of the gun. Nothing complicated here.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats")
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats", Meta = (ToolTip = "The name of this gun, not the same as weapon type."))
 		FName GunName;
 
-	// The time in seconds it takes to reload the weapon
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats|Reload")
-		float ReloadTime;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats")
-		TEnumAsByte<EWeaponCategory> WeaponCategory;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats")
-		TEnumAsByte<EFireMode> FireMode;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats", Meta = (ToolTip = "What type of gun it is."))
 		TEnumAsByte<EWeaponType> WeaponType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats", Meta = (ToolTip = "Is the weapon a Primary Weapon or a Secondary Weapon."))
+		TEnumAsByte<EWeaponCategory> WeaponCategory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats", Meta = (ToolTip = "Which type of mode the gun is supposed to have."))
+		TEnumAsByte<EFireMode> FireMode;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats", Meta = (ToolTip = "What type of ammo it has."))
 		TEnumAsByte<EAmmoType> AmmoType;
 
-	UPROPERTY(EditAnywhere, Category = "GunStats|Recoil")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats|Reload", Meta = (ToolTip = "The time it takes in seconds to reload the weapon."))
+		float ReloadTime;
+
+
+	UPROPERTY(EditAnywhere, Category = "GunStats", Meta = (ToolTip = "How many bullets that should be shot at a time. Not the same as a the spread! This is for the burst."))
 		int BurstLoop = 3;
 
-	//RPM - Bullets per minute fired by weapon
-	UPROPERTY(EditDefaultsOnly, Category = "GunStats", Meta = (ClampMin = 0, ClampMax = 100))
+
+	UPROPERTY(EditDefaultsOnly, Category = "GunStats", Meta = (ClampMin = 0, ToolTip = "RPM - Bullets per minute, cannot be less than 0."))
 		float RateOfFire;
 
 	//Derived from RateOfFire
 	float TimeBetweenShots;
+	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GunStats", Meta = (ToolTip = "The hit location is calculated using a cone, if 0 it will hit straight forward, if something else it will hit randomly within that radius."))
+		float HalfConeDegree;
+
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+		FName TracerTargetName;
+
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 		FName MuzzleSocketName;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-		FName TracerTargetName;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 		FVector MuzzleLocation;
 
 
 
+#pragma region Cool Effects and shit
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", Meta = (ToolTip = "If the gun should have an effect at the muzzle while shooting."))
 		class UParticleSystem* MuzzleEffect;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", Meta = (ToolTip = "If the gun should have some effect when hitting something."))
 		class UParticleSystem* DefaultImpactEffect;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", Meta = (ToolTip = "When the gun hits something, such as flesh, then add the desired effect here. "))
 		class UParticleSystem* FleshImpactEffect;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", Meta = (ToolTip = "When traveling through the air, if it should have some kind of 'tail' effect, then it should be added here."))
 		class UParticleSystem* TracerEffect;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GunStats")
-		float HalfConeDegree = 10.f;
+#pragma endregion
+
+
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
 		USphereComponent* CollisionComponent;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
 		bool bOverlapping;
+
+	// Sets default values for this actor's properties
+	AWeaponBase();
 
 protected:
 
@@ -124,36 +138,36 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-	UFUNCTION(BlueprintCallable, Category = "Recoil|Burst")
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Recoil|Burst", Meta = (ToolTip = "Start tje nurt fire functuion."))
 		void StartBurstTimer();
 
-	UFUNCTION(BlueprintCallable, Category = "Recoil|Burst")
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Recoil|Burst", Meta = (ToolTip = ""))
 		void StopBurstTimer();
 
-	UFUNCTION(BlueprintCallable, Category = "Recoil|Auto")
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Recoil|Auto", Meta = (ToolTip = ""))
 		void StartAutoFireTimer();
 
-	UFUNCTION(BlueprintCallable, Category = "Recoil|Auto")
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Recoil|Auto", Meta = (ToolTip = ""))
 		void StopAutoFireTimer();
 
 
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Basic bithc shots. I've lsot focus I'm sorryu."))
 		virtual void FireSingle();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Spread fire, like shotguns and stuff. Spawn several bullets that do bullet stuff. Overwrite may be ok."))
 		virtual void FireSpread();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Burst fire, shoot idk like 3 bullets at a time. You have my permission to fuucking overwrite it if you need to."))
 		virtual void FireBurst();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Automatic fire, already implemented in code, overwrite it tho if you want."))
 		virtual void FireAuto();
 
-	UFUNCTION(Category = "Weapon|Zoom")
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Zoom", Meta = (ToolTip = "The basic zoom function, needs a 'Zoom' component to work."))
 		void Zoom();
 
-	UFUNCTION(Category = "Weapon|Reload")
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Reload", Meta = (ToolTip = "The reload function. Implemented in code, but if you want something else then just overwrite it with blueprint."))
 		int Reload(int CurrentHeldAmmo);
 
 	UFUNCTION(BlueprintCallable)
