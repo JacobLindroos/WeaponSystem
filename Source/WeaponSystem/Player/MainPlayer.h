@@ -34,25 +34,25 @@ protected:
 		TSubclassOf<class AWeaponBase> CurrentWeapon;
 
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int MaxBulletsCarried;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int CurrentlyCarriedBullets;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int MaxClipCarried;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int CurrentlyCarriedClip;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int MaxShells;
 
-	UPROPERTY(EditAnywhere, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
 		int CurrentlyCarriedShells;
 	
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		AWeaponBase* weapon;
 
 public:
