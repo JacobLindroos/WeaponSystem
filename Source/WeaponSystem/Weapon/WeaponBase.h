@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,9 +22,6 @@ class WEAPONSYSTEM_API AWeaponBase : public AActor, public IInteractInterface
 
 protected:
 
-	UPROPERTY(VisibleAnywhere, Category = "Collider")
-		class UBoxComponent* CollisionComp;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay", Meta = (ToolTip = "When firing the gun, if a sound is desired, add it here."))
 		class USoundBase* FireSound;
 
@@ -49,6 +44,8 @@ public:
 
 	UPROPERTY()
 		AMainPlayer* Player;
+
+#pragma region Gun related variables
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats", Meta = (ToolTip = "The name of this gun, not the same as weapon type."))
@@ -79,10 +76,12 @@ public:
 
 	//Derived from RateOfFire
 	float TimeBetweenShots;
-	
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GunStats", Meta = (ToolTip = "The hit location is calculated using a cone, if 0 it will hit straight forward, if something else it will hit randomly within that radius."))
 		float HalfConeDegree;
+
+#pragma endregion
 
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
@@ -115,12 +114,18 @@ public:
 #pragma endregion
 
 
+#pragma region Collider related things
+
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
 		USphereComponent* CollisionComponent;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
 		bool bOverlapping;
+
+#pragma endregion
+
+
 
 	// Sets default values for this actor's properties
 	AWeaponBase();
@@ -137,50 +142,71 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+#pragma region Timers
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Recoil|Burst", Meta = (ToolTip = "Start tje nurt fire functuion."))
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Timer|Burst", Meta = (ToolTip = "A timer that is used in the Burst Fire function. This starts the timer."))
 		void StartBurstTimer();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Recoil|Burst", Meta = (ToolTip = ""))
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Timer|Burst", Meta = (ToolTip = "A timer that is used in the Burst Fire function. This stops the timer."))
 		void StopBurstTimer();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Recoil|Auto", Meta = (ToolTip = ""))
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Timer|Auto", Meta = (ToolTip = "A timer that is used in the Automatic Fire function. This starts the timer."))
 		void StartAutoFireTimer();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Recoil|Auto", Meta = (ToolTip = ""))
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Timer|Auto", Meta = (ToolTip = "A timer that is used in the Automatic Fire function.This stops the timer."))
 		void StopAutoFireTimer();
 
+#pragma endregion
 
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Basic bithc shots. I've lsot focus I'm sorryu."))
+#pragma region Fire functions
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Fires a single shot when triggered."))
 		virtual void FireSingle();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Spread fire, like shotguns and stuff. Spawn several bullets that do bullet stuff. Overwrite may be ok."))
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Spread fire, like shotguns and stuff. Spawn several bullets at a time when triggered."))
 		virtual void FireSpread();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Burst fire, shoot idk like 3 bullets at a time. You have my permission to fuucking overwrite it if you need to."))
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Burst fire, shoots a chosen amount of bullets after another while triggered. Not like automatic though."))
 		virtual void FireBurst();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Automatic fire, already implemented in code, overwrite it tho if you want."))
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Automatic fire, already implemented in code."))
 		virtual void FireAuto();
+
+#pragma endregion
+
+
+#pragma region Addons
+
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Zoom", Meta = (ToolTip = "The basic zoom function, needs a 'Zoom' component to work."))
 		void Zoom();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Reload", Meta = (ToolTip = "The reload function. Implemented in code, but if you want something else then just overwrite it with blueprint."))
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Reload", Meta = (ToolTip = "The reload function. Nothing to fancy at the momement, no animation or anything."))
 		int Reload(int CurrentHeldAmmo);
+
+#pragma endregion
+
+
+#pragma region Interact and other nice stuff
 
 	UFUNCTION(BlueprintCallable)
 		void OnEquipped();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 		void OnInteract();
-		virtual void OnInteract_Implementation();
+	virtual void OnInteract_Implementation();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 		void OnBeginInteract();
-		virtual void OnBeginInteract_Implementation();
+	virtual void OnBeginInteract_Implementation();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 		void OnEndInteract();
-		virtual void OnEndInteract_Implementation();
+	virtual void OnEndInteract_Implementation();
+
+#pragma endregion
+
+
+
+
 
 };

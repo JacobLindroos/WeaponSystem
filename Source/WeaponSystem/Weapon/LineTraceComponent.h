@@ -20,13 +20,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 		class TSubclassOf<UDamageType> DamageType;
 
+	UPROPERTY(EditDefaultsOnly, Category = "LineTrace")
+		bool bUseLineTrace = false;
+
 	UFUNCTION(BlueprintCallable, Category = "LineTrace")
 		void LineTrace(AActor* MyOwner, AWeaponBase* Weaponfloat, float ConeHalfAngleInDegree = 0.0f);
 
 	FVector SpreadTrace(FVector ConeDir, float ConeHalfAngleInDegree);
-
-	UPROPERTY(EditDefaultsOnly, Category = "LineTrace")
-		bool bUseLineTrace = false;
 
 	float LastFireTime;
 

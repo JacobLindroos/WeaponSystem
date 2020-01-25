@@ -33,23 +33,28 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		class USpringArmComponent* SpringArmComp;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
+#pragma region Ammo properties
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats|Bullets")
 		int MaxBulletsCarried;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats|Bullets")
 		int CurrentlyCarriedBullets;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats|Clips")
 		int MaxClipCarried;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats|Clips")
 		int CurrentlyCarriedClip;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats|Shells")
 		int MaxShells;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AmmoStats|Shells")
 		int CurrentlyCarriedShells;
+
+#pragma endregion
+
 
 	// create trigger capsule
 	UPROPERTY(VisibleAnywhere, Category = "Trigger Capsule")
@@ -60,19 +65,19 @@ protected:
 
 public:
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 		AWeaponBase* CurrentWeapon;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 		AWeaponBase* PrimaryWeapon1;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 		AWeaponBase* PrimaryWeapon2;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 		AWeaponBase* SecondaryWeapon1;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 		AWeaponBase* SecondaryWeapon2;
 
 public:
@@ -86,6 +91,8 @@ public:
 
 	UCameraComponent* GetCamera() { return CameraComp; }
 
+#pragma region Weapon functions
+
 	UFUNCTION(BlueprintCallable, Category = "Player")
 		void StartFire();
 
@@ -98,6 +105,11 @@ public:
 	UFUNCTION()
 		void WeaponZoom(float Value);
 
+#pragma endregion
+
+
+#pragma region Overlap and interact functions
+
 	// pick up and equip
 	UFUNCTION()
 		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -108,8 +120,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Interact")
 		void OnInteract();
 
+
 	UFUNCTION()
 		void PickupWeapon(AWeaponBase* Weapon);
+
+#pragma endregion
+
+
+#pragma region Equipped weapons
+
 
 	UFUNCTION()
 		void EquipPrimaryWeapon1();
@@ -122,4 +141,5 @@ public:
 	UFUNCTION()
 		void EquipWeapon(AWeaponBase* Weapon);
 
+#pragma endregion
 };

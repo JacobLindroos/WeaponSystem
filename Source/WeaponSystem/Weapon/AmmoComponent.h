@@ -44,16 +44,16 @@ public:
 
 #pragma region Getters
 
-	UFUNCTION(BlueprintPure, Category = "Ammo|Bullets")
+	UFUNCTION(BlueprintPure, Category = "Ammo|Bullets", Meta = (ToolTip = "Get the current amount of bullets in the equipped weapon. If the weapon uses bullets that is, otherwise you can ignore this."))
 		int GetBullets() { return CurrentBullets; }
 
-	UFUNCTION(BlueprintPure, Category = "Ammo|Clips")
+	UFUNCTION(BlueprintPure, Category = "Ammo|Clips", Meta = (ToolTip = "Get the current amount of bullets in the clip of the equipped weapon. If the weapon uses clips, otherwise you can ignore this."))
 		int GetAmmoInClips() { return CurrentAmmoInClip; }
 
-	UFUNCTION(BlueprintPure, Category = "Ammo|Shells")
+	UFUNCTION(BlueprintPure, Category = "Ammo|Shells", Meta = (ToolTip = "Get the current amount of shells in the currently equipped weapon. If the weapon uses shells, otherwise you can ignore this."))
 		int GetShells() { return CurrentShells; }
 
-	UFUNCTION(BlueprintPure, Category = "Ammo|Shells")
+	UFUNCTION(BlueprintPure, Category = "Ammo|Shells", Meta = (ToolTip = "Get how many pellets there is in the shell for this weapon. Only useful if the weapon uses shells. Otherwise ignore this function."))
 		int GetPelletsInShell() { return PelletsInShell; }
 
 #pragma endregion
@@ -61,13 +61,13 @@ public:
 
 #pragma region Useage of Ammo
 
-	UFUNCTION(BlueprintCallable, Category = "Ammo|Clips")
+	UFUNCTION(BlueprintCallable, Category = "Ammo|Clips", Meta = (ToolTip = "Just decreses the current ammo in the equipped clip. Only useful if the weapon uses clips, otherwise ignore this fucntion."))
 		void DecreseAmmoInClip();
 
-	UFUNCTION(BlueprintCallable, Category = "Ammo|Bullets")
+	UFUNCTION(BlueprintCallable, Category = "Ammo|Bullets", Meta = (ToolTip = "Just decreses the current bullets on the weapon. Only useful if the weapon uses bullets, otherwise ignore this fucntion."))
 		void DecreseBullets();
 
-	UFUNCTION(BlueprintCallable, Category = "Ammo|Shells")
+	UFUNCTION(BlueprintCallable, Category = "Ammo|Shells", Meta = (ToolTip = "Just decreses the current shells in the weapon. Only useful if the weapon uses shells, otherwise ignore this fucntion."))
 		void DecreseShell();
 
 #pragma endregion
@@ -75,13 +75,13 @@ public:
 
 #pragma region Reloaders
 
-	UFUNCTION(BlueprintCallable, Category = "Ammo|Clips")
+	UFUNCTION(BlueprintCallable, Category = "Ammo|Clips", Meta = (ToolTip = "Reload the clip in the weapon, only useful if the weapon uses clips."))
 		int ReloadClip(int CarriedClips);
 
-	UFUNCTION(BlueprintCallable, Category = "Ammo|Bullets")
+	UFUNCTION(BlueprintCallable, Category = "Ammo|Bullets", Meta = (ToolTip = "Reload the bullets in the weapon, only useful if the weapon uses bullets."))
 		int ReloadBullets(int CarriedBullets);
 
-	UFUNCTION(BlueprintCallable, Category = "Ammo|Shells")
+	UFUNCTION(BlueprintCallable, Category = "Ammo|Shells", Meta = (ToolTip = "Reload the shells in the weapon, only useful if the weapon uses shells."))
 		int ReloadShells(int CarriedShells);
 
 #pragma endregion

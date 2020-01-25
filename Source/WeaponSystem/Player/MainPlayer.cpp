@@ -29,15 +29,15 @@ AMainPlayer::AMainPlayer()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
 
-	//weapon = CreateDefaultSubobject<AWeaponBase>(TEXT("Weapon"));
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanJump = true;
 
-	CurrentlyCarriedBullets = 20;
-	MaxBulletsCarried = 99;
-	MaxClipCarried = 15;
-	CurrentlyCarriedClip = 5;
+
+	CurrentlyCarriedBullets = 0;
+	MaxBulletsCarried = 0;
+	MaxClipCarried = 0;
+	CurrentlyCarriedClip = 0;
 
 	// declare trigger capsule
 	TriggerCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger Capsule"));
