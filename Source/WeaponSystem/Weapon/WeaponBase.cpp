@@ -17,7 +17,7 @@ AWeaponBase::AWeaponBase()
 	PrimaryActorTick.bCanEverTick = true;
 	   
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-	CollisionComponent->InitSphereRadius(15.0f);
+	CollisionComponent->InitSphereRadius(CollisionSphereRadius);
 	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("BlockAll"));
 
 	//CollisionComponent->SetupAttachment(RootComponent);
@@ -58,15 +58,33 @@ void AWeaponBase::Tick(float DeltaTime)
 
 #pragma region Burst timer handler
 
-void AWeaponBase::StartBurstTimer()
+void AWeaponBase::StartBurstTimer(bool bSpecialAttack)
 {
-	GetWorld()->GetTimerManager().SetTimer(TimeHandler, this, &AWeaponBase::FireBurst, 0.08f, true);
+	bUsingSpecialAttack = bSpecialAttack;
+	if (!bUsingSpecialAttack)
+	{
+		GetWorld()->GetTimerManager().SetTimer(TimeHandler, this, &AWeaponBase::FireBurst, 0.08f, true);
+	}
+	else
+	{
+		//implement SpecialBurstTimer
+		GetWorld()->GetTimerManager().SetTimer(TimeHandler, this, &AWeaponBase::FireBurst, 0.08f, true);
+	}		
 }
 
 void AWeaponBase::StopBurstTimer()
 {
-	BurstLoop = intilizeBurst;
-	GetWorld()->GetTimerManager().ClearTimer(TimeHandler);
+	if (!bUsingSpecialAttack)
+	{
+		BurstLoop = intilizeBurst;
+		GetWorld()->GetTimerManager().ClearTimer(TimeHandler);
+	}
+	else
+	{
+		//implement SpecialStopBurstTimer
+		BurstLoopSpecial = intilizeBurst;
+		GetWorld()->GetTimerManager().ClearTimer(TimeHandler);
+	}
 }
 
 #pragma endregion
@@ -74,11 +92,22 @@ void AWeaponBase::StopBurstTimer()
 
 #pragma region Autofire timer handler
 
-void AWeaponBase::StartAutoFireTimer()
+void AWeaponBase::StartAutoFireTimer(bool bSpecialAttack)
 {
-	float FirstDelay = FMath::Max(LineComp->LastFireTime + TimeBetweenShots - GetWorld()->TimeSeconds, 0.f);
+	bUsingSpecialAttack = bSpecialAttack;
+	if (!bUsingSpecialAttack)
+	{
+		float FirstDelay = FMath::Max(LineComp->LastFireTime + TimeBetweenShots - GetWorld()->TimeSeconds, 0.f);
 
-	GetWorld()->GetTimerManager().SetTimer(TimeHandler, this, &AWeaponBase::FireAuto, TimeBetweenShots, true, FirstDelay);
+		GetWorld()->GetTimerManager().SetTimer(TimeHandler, this, &AWeaponBase::FireAuto, TimeBetweenShots, true, FirstDelay);
+	}
+	else
+	{
+		//implement SpecialAutoFireTimer
+		float FirstDelay = FMath::Max(LineComp->LastFireTime + TimeBetweenShots - GetWorld()->TimeSeconds, 0.f);
+
+		GetWorld()->GetTimerManager().SetTimer(TimeHandler, this, &AWeaponBase::FireAuto, TimeBetweenShots, true, FirstDelay);
+	}		
 }
 
 void AWeaponBase::StopAutoFireTimer()
@@ -91,46 +120,83 @@ void AWeaponBase::StopAutoFireTimer()
 
 #pragma region Fire functions
 
-void AWeaponBase::FireSingle()
+void AWeaponBase::FireSingle(bool bSpecialAttack)
 {
+	bUsingSpecialAttack = bSpecialAttack;
 	if (LineComp != nullptr && RecoilComp != nullptr)
 	{
-
-		if (AmmoType == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
+		if (!bUsingSpecialAttack)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
-			LineComp->LineTrace(Player, this);
-			RecoilComp->StartRecoilTimer();
-			AmmoComp->DecreseBullets();
-		}
+			if (AmmoType == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseBullets();
+			}
 
-		if (AmmoType == EAmmoType::EClips)
+			if (AmmoType == EAmmoType::EClips)
+			{
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseAmmoInClip();
+			}
+		}
+		else
 		{
-			LineComp->LineTrace(Player, this);
-			RecoilComp->StartRecoilTimer();
-			AmmoComp->DecreseAmmoInClip();
-		}
+			//implement SpecialFireSingle
+			if (AmmoTypeSpecial == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseBullets();
+			}
 
+			if (AmmoTypeSpecial == EAmmoType::EClips)
+			{
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseAmmoInClip();
+			}
+		}
 	}
 }
 
 
 //Spread Fire, for example Shotguns
-void AWeaponBase::FireSpread()
+void AWeaponBase::FireSpread(bool bSpecialAttack)
 {
+	bUsingSpecialAttack = bSpecialAttack;
 	if (LineComp != nullptr && RecoilComp != nullptr)
 	{
-		if (AmmoType == EAmmoType::EShells && AmmoComp->GetShells() > 0)
+		if (!bUsingSpecialAttack)
 		{
-			for ( int i = 0; i < AmmoComp->GetPelletsInShell(); i++)
+			if (AmmoType == EAmmoType::EShells && AmmoComp->GetShells() > 0)
 			{
-				LineComp->LineTrace(Player, this, HalfConeDegree);
+				for (int i = 0; i < AmmoComp->GetPelletsInShell(); i++)
+				{
+					LineComp->LineTrace(Player, this, HalfConeDegree);
 
+				}
+				AmmoComp->DecreseShell();
+				RecoilComp->StartRecoilTimer();
 			}
-			AmmoComp->DecreseShell();
-			RecoilComp->StartRecoilTimer();
 		}
-		
+		else
+		{
+			//implement SpecialFireSpread
+			if (AmmoTypeSpecial == EAmmoType::EShells && AmmoComp->GetShells() > 0)
+			{
+				for (int i = 0; i < AmmoComp->GetPelletsInShell()*2; i++)
+				{
+					LineComp->LineTrace(Player, this, HalfConeDegree);
+
+				}
+				AmmoComp->DecreseShell();
+				RecoilComp->StartRecoilTimer();
+			}
+		}		
 	}
 }
 
@@ -139,17 +205,36 @@ void AWeaponBase::FireBurst()
 {
 	if (LineComp != nullptr && RecoilComp != nullptr)
 	{
-		if (--BurstLoop <= 0)
+		if (!bUsingSpecialAttack)
 		{
-			StopBurstTimer();
-		}
+			if (--BurstLoop <= 0)
+			{
+				StopBurstTimer();
+			}
 
-		if (AmmoType == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
+			if (AmmoType == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseAmmoInClip();
+			}
+		}
+		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
-			LineComp->LineTrace(Player, this);
-			RecoilComp->StartRecoilTimer();
-			AmmoComp->DecreseAmmoInClip();
+			//implement SpecialFireBurst
+			if (--BurstLoopSpecial <= 0)
+			{
+				StopBurstTimer();
+			}
+
+			if (AmmoTypeSpecial == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseAmmoInClip();
+			}
 		}
 	}
 }
@@ -159,20 +244,44 @@ void AWeaponBase::FireAuto()
 {
 	if (LineComp != nullptr && RecoilComp != nullptr)
 	{
-		if (AmmoType == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
+		if (!bUsingSpecialAttack)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
-			LineComp->LineTrace(Player, this);
-			RecoilComp->StartRecoilTimer();
-			AmmoComp->DecreseBullets();
-		}
 
-		if (AmmoType == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
+			if (AmmoType == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseBullets();
+			}
+
+			if (AmmoType == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseAmmoInClip();
+			}
+		}
+		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
-			LineComp->LineTrace(Player, this);
-			RecoilComp->StartRecoilTimer();
-			AmmoComp->DecreseAmmoInClip();
+			//implement SpecialFireAuto
+
+			if (AmmoTypeSpecial == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseBullets();
+			}
+
+			if (AmmoTypeSpecial == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
+				LineComp->LineTrace(Player, this);
+				RecoilComp->StartRecoilTimer();
+				AmmoComp->DecreseAmmoInClip();
+			}
 		}
 	}
 }

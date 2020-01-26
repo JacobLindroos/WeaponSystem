@@ -54,24 +54,7 @@ AMainPlayer::AMainPlayer()
 void AMainPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	//Attach the gun
-	//if (CurrentWeapon != nullptr)
-	//{
-	//	FActorSpawnParameters SpawnGun;
-	//	SpawnGun.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	//	//Spawn the weapon
-	//	weapon = GetWorld()->SpawnActor<AWeaponBase>(CurrentWeapon, FVector(0.f, 0.f, 0.f), FRotator(0.f, 0.f, 0.f), SpawnGun);
-	//	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor - Dont mind the red it funks
-	//	weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false), TEXT("WeaponSocket"));
-
-	//	// remove collision
-	//	weapon->OnEquipped();
-
-	//	weapon->Player = this;
-
-
-	//}
 }
 
 
@@ -125,6 +108,8 @@ void AMainPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainPlayer::ReloadWeapon);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMainPlayer::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AMainPlayer::StopAutoFire);
+	PlayerInputComponent->BindAction("FireSpecial", IE_Pressed, this, &AMainPlayer::StartFireSpecial);
+	PlayerInputComponent->BindAction("FireSpecial", IE_Released, this, &AMainPlayer::StopAutoFireSpecial);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AMainPlayer::OnInteract);
 	PlayerInputComponent->BindAction("PrimaryWeapon1", IE_Pressed, this, &AMainPlayer::EquipPrimaryWeapon1);
 	PlayerInputComponent->BindAction("PrimaryWeapon2", IE_Pressed, this, &AMainPlayer::EquipPrimaryWeapon2);
@@ -168,12 +153,47 @@ void AMainPlayer::StartFire()
 	}
 }
 
+void AMainPlayer::StartFireSpecial()
+{
+	if (CurrentWeapon)
+	{
+		switch (CurrentWeapon->FireModeSpecial)
+		{
+		case EFireMode::ESingle:
+			CurrentWeapon->FireSingle(true);
+			break;
+		case EFireMode::ESpread:
+			CurrentWeapon->FireSpread(true);
+			break;
+		case EFireMode::EBurst:
+			CurrentWeapon->StartBurstTimer(true);
+			break;
+		case EFireMode::EAuto:
+			CurrentWeapon->StartAutoFireTimer(true);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 
 void AMainPlayer::StopAutoFire()
 {
 	if (CurrentWeapon)
 	{
 		if (CurrentWeapon->FireMode == EFireMode::EAuto)
+		{
+			CurrentWeapon->StopAutoFireTimer();
+		}
+	}
+}
+
+void AMainPlayer::StopAutoFireSpecial()
+{
+	if (CurrentWeapon)
+	{
+		if (CurrentWeapon->FireModeSpecial == EFireMode::EAuto)
 		{
 			CurrentWeapon->StopAutoFireTimer();
 		}

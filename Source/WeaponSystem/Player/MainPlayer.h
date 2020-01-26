@@ -65,7 +65,8 @@ protected:
 
 public:
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon")
+	// This one should be BleprintReadWrite to use it in WBP
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 		AWeaponBase* CurrentWeapon;
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon")
@@ -97,7 +98,13 @@ public:
 		void StartFire();
 
 	UFUNCTION(BlueprintCallable, Category = "Player")
+		void StartFireSpecial();
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
 		void StopAutoFire();
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+		void StopAutoFireSpecial();
 
 	UFUNCTION(BlueprintCallable, Category = "Player")
 		void ReloadWeapon();

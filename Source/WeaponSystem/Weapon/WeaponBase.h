@@ -57,18 +57,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats", Meta = (ToolTip = "Is the weapon a Primary Weapon or a Secondary Weapon."))
 		TEnumAsByte<EWeaponCategory> WeaponCategory;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats", Meta = (ToolTip = "Which type of mode the gun is supposed to have."))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats|Primary Attack", Meta = (ToolTip = "Which type of mode the gun is supposed to have."))
 		TEnumAsByte<EFireMode> FireMode;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats", Meta = (ToolTip = "What type of ammo it has."))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats|Primary Attack", Meta = (ToolTip = "What type of ammo it has."))
 		TEnumAsByte<EAmmoType> AmmoType;
+
+	UPROPERTY(EditAnywhere, Category = "GunStats|Primary Attack", Meta = (ToolTip = "How many bullets that should be shot at a time. Not the same as a the spread! This is for the burst."))
+		int BurstLoop = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats|Special Attack", Meta = (ToolTip = "Which type of mode the gun is supposed to have."))
+		TEnumAsByte<EFireMode> FireModeSpecial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats|Special Attack", Meta = (ToolTip = "What type of ammo it has."))
+		TEnumAsByte<EAmmoType> AmmoTypeSpecial;
+
+	UPROPERTY(EditAnywhere, Category = "GunStats|Special Attack", Meta = (ToolTip = "How many bullets that should be shot at a time. Not the same as a the spread! This is for the burst."))
+		int BurstLoopSpecial = 3;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats|Reload", Meta = (ToolTip = "The time it takes in seconds to reload the weapon."))
 		float ReloadTime;
-
-
-	UPROPERTY(EditAnywhere, Category = "GunStats", Meta = (ToolTip = "How many bullets that should be shot at a time. Not the same as a the spread! This is for the burst."))
-		int BurstLoop = 3;
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "GunStats", Meta = (ClampMin = 0, ToolTip = "RPM - Bullets per minute, cannot be less than 0."))
@@ -77,9 +85,11 @@ public:
 	//Derived from RateOfFire
 	float TimeBetweenShots;
 
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GunStats", Meta = (ToolTip = "The hit location is calculated using a cone, if 0 it will hit straight forward, if something else it will hit randomly within that radius."))
 		float HalfConeDegree;
+
+	//Check if attack is primary attack or special attack
+	bool bUsingSpecialAttack;
 
 #pragma endregion
 
@@ -121,7 +131,7 @@ public:
 		USphereComponent* CollisionComponent;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
-		bool bOverlapping;
+		float CollisionSphereRadius = 80.0f;
 
 #pragma endregion
 
@@ -145,13 +155,13 @@ public:
 #pragma region Timers
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Timer|Burst", Meta = (ToolTip = "A timer that is used in the Burst Fire function. This starts the timer."))
-		void StartBurstTimer();
+		void StartBurstTimer(bool bSpecialAttack = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Timer|Burst", Meta = (ToolTip = "A timer that is used in the Burst Fire function. This stops the timer."))
 		void StopBurstTimer();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Timer|Auto", Meta = (ToolTip = "A timer that is used in the Automatic Fire function. This starts the timer."))
-		void StartAutoFireTimer();
+		void StartAutoFireTimer(bool bSpecialAttack = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Timer|Auto", Meta = (ToolTip = "A timer that is used in the Automatic Fire function.This stops the timer."))
 		void StopAutoFireTimer();
@@ -162,10 +172,10 @@ public:
 #pragma region Fire functions
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Fires a single shot when triggered."))
-		virtual void FireSingle();
+		virtual void FireSingle(bool bSpecialAttack = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Spread fire, like shotguns and stuff. Spawn several bullets at a time when triggered."))
-		virtual void FireSpread();
+		virtual void FireSpread(bool bSpecialAttack = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Burst fire, shoots a chosen amount of bullets after another while triggered. Not like automatic though."))
 		virtual void FireBurst();
