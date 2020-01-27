@@ -129,7 +129,6 @@ void AWeaponBase::FireSingle(bool bSpecialAttack)
 		{
 			if (AmmoType == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
 				LineComp->LineTrace(Player, this);
 				RecoilComp->StartRecoilTimer();
 				AmmoComp->DecreseBullets();
@@ -147,7 +146,6 @@ void AWeaponBase::FireSingle(bool bSpecialAttack)
 			//implement SpecialFireSingle
 			if (AmmoTypeSpecial == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
 				LineComp->LineTrace(Player, this);
 				RecoilComp->StartRecoilTimer();
 				AmmoComp->DecreseBullets();
@@ -214,7 +212,6 @@ void AWeaponBase::FireBurst()
 
 			if (AmmoType == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
 				LineComp->LineTrace(Player, this);
 				RecoilComp->StartRecoilTimer();
 				AmmoComp->DecreseAmmoInClip();
@@ -230,7 +227,6 @@ void AWeaponBase::FireBurst()
 
 			if (AmmoTypeSpecial == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
 				LineComp->LineTrace(Player, this);
 				RecoilComp->StartRecoilTimer();
 				AmmoComp->DecreseAmmoInClip();
@@ -249,7 +245,6 @@ void AWeaponBase::FireAuto()
 
 			if (AmmoType == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
 				LineComp->LineTrace(Player, this);
 				RecoilComp->StartRecoilTimer();
 				AmmoComp->DecreseBullets();
@@ -257,7 +252,6 @@ void AWeaponBase::FireAuto()
 
 			if (AmmoType == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
 				LineComp->LineTrace(Player, this);
 				RecoilComp->StartRecoilTimer();
 				AmmoComp->DecreseAmmoInClip();
@@ -269,7 +263,6 @@ void AWeaponBase::FireAuto()
 
 			if (AmmoTypeSpecial == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetBullets()));
 				LineComp->LineTrace(Player, this);
 				RecoilComp->StartRecoilTimer();
 				AmmoComp->DecreseBullets();
@@ -277,7 +270,6 @@ void AWeaponBase::FireAuto()
 
 			if (AmmoTypeSpecial == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, FString::Printf(TEXT("Ammo: %d"), AmmoComp->GetAmmoInClips()));
 				LineComp->LineTrace(Player, this);
 				RecoilComp->StartRecoilTimer();
 				AmmoComp->DecreseAmmoInClip();

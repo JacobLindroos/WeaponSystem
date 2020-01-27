@@ -47,14 +47,31 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Ammo|Bullets", Meta = (ToolTip = "Get the current amount of bullets in the equipped weapon. If the weapon uses bullets that is, otherwise you can ignore this."))
 		int GetBullets() { return CurrentBullets; }
 
+	UFUNCTION(BlueprintPure, Category = "Ammo|Bullets", Meta = (ToolTip = "Get the current amount of bullets in the equipped weapon. If the weapon uses bullets that is, otherwise you can ignore this."))
+		int GetMaxBullets() { return MaxBullets; }
+
+
+
 	UFUNCTION(BlueprintPure, Category = "Ammo|Clips", Meta = (ToolTip = "Get the current amount of bullets in the clip of the equipped weapon. If the weapon uses clips, otherwise you can ignore this."))
 		int GetAmmoInClips() { return CurrentAmmoInClip; }
+
+	UFUNCTION(BlueprintPure, Category = "Ammo|Clips", Meta = (ToolTip = "Get the current amount of bullets in the equipped weapon. If the weapon uses bullets that is, otherwise you can ignore this."))
+		int GetMaxAmmoInClips() { return ClipSize; }
+
+
+
 
 	UFUNCTION(BlueprintPure, Category = "Ammo|Shells", Meta = (ToolTip = "Get the current amount of shells in the currently equipped weapon. If the weapon uses shells, otherwise you can ignore this."))
 		int GetShells() { return CurrentShells; }
 
+	UFUNCTION(BlueprintPure, Category = "Ammo|Shells", Meta = (ToolTip = "Get the current amount of shells in the currently equipped weapon. If the weapon uses shells, otherwise you can ignore this."))
+		int GetMaxShells() { return MaxShells; }
+
+
 	UFUNCTION(BlueprintPure, Category = "Ammo|Shells", Meta = (ToolTip = "Get how many pellets there is in the shell for this weapon. Only useful if the weapon uses shells. Otherwise ignore this function."))
 		int GetPelletsInShell() { return PelletsInShell; }
+
+
 
 #pragma endregion
 
