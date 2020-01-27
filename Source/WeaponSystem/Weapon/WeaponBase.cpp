@@ -8,14 +8,14 @@
 #include "ZoomComponent.h"
 #include <GameFramework/Actor.h>
 #include "Components/BoxComponent.h" 
-
+#include "WeaponSystem/Projectile/ProjectileComponent.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	   
+
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	CollisionComponent->InitSphereRadius(CollisionSphereRadius);
 	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("BlockAll"));
@@ -29,6 +29,7 @@ AWeaponBase::AWeaponBase()
 	MuzzleSocketName = "MuzzleSocket";
 	TracerTargetName = "Target";
 	RateOfFire = 600;
+	MaxImpactMultiplier = 1.0f;
 
 }
 
@@ -42,6 +43,8 @@ void AWeaponBase::BeginPlay()
 	RecoilComp = FindComponentByClass<URecoilComponent>();
 	ZoomComp = FindComponentByClass<UZoomComponent>();
 	AmmoComp = FindComponentByClass<UAmmoComponent>();
+	ProjectileComp = FindComponentByClass<UProjectileComponent>();
+
 
 	TimeBetweenShots = 60 / RateOfFire;
 }
@@ -69,7 +72,7 @@ void AWeaponBase::StartBurstTimer(bool bSpecialAttack)
 	{
 		//implement SpecialBurstTimer
 		GetWorld()->GetTimerManager().SetTimer(TimeHandler, this, &AWeaponBase::FireBurst, 0.08f, true);
-	}		
+	}
 }
 
 void AWeaponBase::StopBurstTimer()
@@ -107,7 +110,7 @@ void AWeaponBase::StartAutoFireTimer(bool bSpecialAttack)
 		float FirstDelay = FMath::Max(LineComp->LastFireTime + TimeBetweenShots - GetWorld()->TimeSeconds, 0.f);
 
 		GetWorld()->GetTimerManager().SetTimer(TimeHandler, this, &AWeaponBase::FireAuto, TimeBetweenShots, true, FirstDelay);
-	}		
+	}
 }
 
 void AWeaponBase::StopAutoFireTimer()
@@ -123,12 +126,13 @@ void AWeaponBase::StopAutoFireTimer()
 void AWeaponBase::FireSingle(bool bSpecialAttack)
 {
 	bUsingSpecialAttack = bSpecialAttack;
-	if (LineComp != nullptr && RecoilComp != nullptr)
+	if ((LineComp != nullptr || ProjectileComp != nullptr) && RecoilComp != nullptr)
 	{
 		if (!bUsingSpecialAttack)
 		{
 			if (AmmoType == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
 			{
+				//ProjectileComp->Fire();
 				LineComp->LineTrace(Player, this);
 				RecoilComp->StartRecoilTimer();
 				AmmoComp->DecreseBullets();
@@ -186,7 +190,7 @@ void AWeaponBase::FireSpread(bool bSpecialAttack)
 			//implement SpecialFireSpread
 			if (AmmoTypeSpecial == EAmmoType::EShells && AmmoComp->GetShells() > 0)
 			{
-				for (int i = 0; i < AmmoComp->GetPelletsInShell()*2; i++)
+				for (int i = 0; i < AmmoComp->GetPelletsInShell() * 2; i++)
 				{
 					LineComp->LineTrace(Player, this, HalfConeDegree);
 
@@ -194,7 +198,7 @@ void AWeaponBase::FireSpread(bool bSpecialAttack)
 				AmmoComp->DecreseShell();
 				RecoilComp->StartRecoilTimer();
 			}
-		}		
+		}
 	}
 }
 
