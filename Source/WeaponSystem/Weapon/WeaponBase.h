@@ -56,6 +56,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats", Meta = (ToolTip = "The name of this gun, not the same as weapon type."))
 		FName GunName;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats|Firing System", Meta = (ToolTip = "Which firing system to use."))
+		TEnumAsByte<EFiringSystem> FiringSystem;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gunstats", Meta = (ToolTip = "How rare this specific gun is. "))
 		TEnumAsByte<EWeaponRarity> WeaponRarity;
 
@@ -90,6 +93,12 @@ public:
 		int BurstLoopSpecial = 3;
 
 #pragma endregion
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gunstats|Special Attack", Meta = (ToolTip = "Which type of mode the gun is currently using."))
+		TEnumAsByte<EFireMode> CurrentFireMode;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gunstats|Special Attack", Meta = (ToolTip = "What type of ammo it currently has."))
+		TEnumAsByte<EAmmoType> CurrentAmmoType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats|Reload", Meta = (ToolTip = "The time it takes in seconds to reload the weapon."))
 		float ReloadTime;
@@ -189,6 +198,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Add-on|Timer|Auto", Meta = (ToolTip = "A timer that is used in the Automatic Fire function.This stops the timer."))
 		void StopAutoFireTimer();
 
+	void SpawnSingleProjectile();
+	void SpawnMultipleProjectiles(float SpreadDegree, int NrSpawnProjectiles);
+
 #pragma endregion
 
 
@@ -205,6 +217,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = "Automatic fire, already implemented in code."))
 		virtual void FireAuto();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Fire", Meta = (ToolTip = ""))
+		virtual void Fire();
 
 #pragma endregion
 

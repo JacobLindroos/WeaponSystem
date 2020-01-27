@@ -3,8 +3,6 @@
 
 #include "ProjectileBase.h"
 #include <Kismet/GameplayStatics.h>
-#include <Engine/Engine.h>
-#include "../Player/MainPlayer.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
@@ -21,7 +19,13 @@ AProjectileBase::AProjectileBase()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
+}
 
+// Called when the game starts or when spawned
+void AProjectileBase::BeginPlay()
+{
+	Super::BeginPlay();
+	
 }
 
 void AProjectileBase::SetInitialStats(float ProjectileSpeed, float PjtRange)
@@ -35,13 +39,6 @@ void AProjectileBase::SetInitialStats(float ProjectileSpeed, float PjtRange)
 	ProjectileRange = PjtRange;
 
 	InitialLifeSpan = PjtRange / ProjectileSpeed;
-}
-
-// Called when the game starts or when spawned
-void AProjectileBase::BeginPlay()
-{
-	Super::BeginPlay();
-
 }
 
 float AProjectileBase::CalculateDamageMultiplier(float Distance)
@@ -80,9 +77,9 @@ void AProjectileBase::FireInDirection(const FVector& ShootDirection)
 void AProjectileBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
 
-	if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
+	if (OtherActor != this && OtherComponent->ComponentHasTag("Enemy"))
 	{
-		OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
+		//OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
 
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("Hit: ") + OtherActor->GetName());
 
@@ -90,23 +87,25 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActo
 
 		Weapon = Cast<AWeaponBase>(Player->CurrentWeapon);
 
-		if (Player)
-		{
-			FVector EyeLocation;
-			FRotator EyeRotation;
-			Player->GetActorEyesViewPoint(EyeLocation, EyeRotation);
+		UGameplayStatics::ApplyPointDamage(OtherActor, 20.f, this->GetActorForwardVector(), Hit, Player->GetInstigatorController(), Player, DamageType);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Weapon->FleshImpactEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
 
-			FVector ShotDirection = EyeRotation.Vector();
+		//if (Player)
+		//{
+		//	FVector EyeLocation;
+		//	FRotator EyeRotation;
+		//	Player->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
-			FVector PlayerLocation = Player->GetActorLocation();
+		//	FVector ShotDirection = EyeRotation.Vector();
 
-			float Distance = FVector::Dist(PlayerLocation, OtherActor->GetActorLocation());
-			OutputDamage = CalculateOutputDamage(Distance, Weapon->BaseDamage);
+		//	FVector PlayerLocation = Player->GetActorLocation();
 
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("OutputDamage: ") + FString::SanitizeFloat(OutputDamage));
+		//	float Distance = FVector::Dist(PlayerLocation, OtherActor->GetActorLocation());
+		//	OutputDamage = CalculateOutputDamage(Distance, Weapon->BaseDamage);
 
-			UGameplayStatics::ApplyPointDamage(OtherActor, OutputDamage, ShotDirection, Hit, Player->GetInstigatorController(), Player, TSubclassOf<UDamageType>());
-		}
+		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("OutputDamage: ") + FString::SanitizeFloat(OutputDamage));
+
+		//	UGameplayStatics::ApplyPointDamage(OtherActor, OutputDamage, ShotDirection, Hit, Player->GetInstigatorController(), Player, TSubclassOf<UDamageType>());
+		//}
 	}
 }
-

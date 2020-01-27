@@ -23,6 +23,50 @@ UAmmoComponent::UAmmoComponent()
 
 
 
+bool UAmmoComponent::HasAmmo(AWeaponBase* Weapon)
+{
+	// ammo use - if there is no ammo left, return(no fire)
+	switch (Weapon->CurrentAmmoType)
+	{
+	case EAmmoType::EClips:
+		if (CurrentAmmoInClip > 0)
+		{
+			CurrentAmmoInClip--;
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FString("Out of Ammo."));
+			return false;
+		}
+		break;
+	case EAmmoType::EBullets:
+		if (CurrentBullets > 0)
+		{
+			CurrentBullets--;
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FString("Out of Ammo."));
+			return false;
+		}
+		break;
+	case EAmmoType::EShells:
+		if (CurrentShells > 0)
+		{
+			CurrentShells--;
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FString("Out of Ammo."));
+			return false;
+		}
+		break;
+	default:
+		break;
+	}
+	return true;
+}
+
 void UAmmoComponent::DecreseAmmoInClip()
 {
 	//Reduces ammo in clip
@@ -47,7 +91,6 @@ void UAmmoComponent::DecreseShell()
 	{
 		CurrentShells--;
 	}
-
 }
 
 

@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,8 +14,8 @@ UCLASS()
 class WEAPONSYSTEM_API AProjectileBase : public AActor
 {
 	GENERATED_BODY()
-
-public:
+	
+public:	
 	// Sets default values for this actor's properties
 	AProjectileBase();
 
@@ -29,8 +31,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:
-
+public:	
 	UPROPERTY(VisibleDefaultsOnly, Category = "Projectile")
 		USphereComponent* CollisionComponent;
 
@@ -48,6 +49,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "ProjectileStats")
 		float ProjectileRange;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+		class TSubclassOf<UDamageType> DamageType;
 
 private:
 	float ImpactMultiplier;

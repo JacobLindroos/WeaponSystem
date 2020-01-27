@@ -5,6 +5,13 @@
 #include "EnumClasses.generated.h"
 
 UENUM()
+enum class EFiringSystem : uint8
+{
+	ELineTrace		UMETA(DisplayName = "Line Trace", ToolTip = "Uses Line Trace when firing weapons."),
+	EProjectile		UMETA(DisplayName = "Projectile", ToolTip = "Uses Projectiles when firing weapons.")
+};
+
+UENUM()
 enum class EWeaponCategory : uint8
 {
 	EPrimary		UMETA(DisplayName = "Primary Weapon", ToolTip = "This weapon is a primary weapon."),

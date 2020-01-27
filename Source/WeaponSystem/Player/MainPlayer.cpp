@@ -182,7 +182,7 @@ void AMainPlayer::StopAutoFire()
 {
 	if (CurrentWeapon)
 	{
-		if (CurrentWeapon->FireMode == EFireMode::EAuto)
+		if (CurrentWeapon->CurrentFireMode == EFireMode::EAuto)
 		{
 			CurrentWeapon->StopAutoFireTimer();
 		}

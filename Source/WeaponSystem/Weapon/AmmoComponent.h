@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "WeaponBase.h"
 #include "AmmoComponent.generated.h"
 
 
@@ -77,6 +78,10 @@ public:
 
 
 #pragma region Useage of Ammo
+
+	// if it has ammo, use the ammo and return true. if it doesn't, return false
+	UFUNCTION(BlueprintCallable, Category = "Ammo|Clips", Meta = (ToolTip = "Just decreses the current ammo in the equipped clip. Only useful if the weapon uses clips, otherwise ignore this fucntion."))
+		bool HasAmmo(AWeaponBase* Weapon);
 
 	UFUNCTION(BlueprintCallable, Category = "Ammo|Clips", Meta = (ToolTip = "Just decreses the current ammo in the equipped clip. Only useful if the weapon uses clips, otherwise ignore this fucntion."))
 		void DecreseAmmoInClip();

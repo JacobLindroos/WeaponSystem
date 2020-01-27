@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,24 +9,27 @@
 #include "ProjectileComponent.generated.h"
 
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class WEAPONSYSTEM_API UProjectileComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:
+public:	
 	// Sets default values for this component's properties
 	UProjectileComponent();
-
-	UFUNCTION(BlueprintCallable, Category = "Projectile")
-		void Fire(float ProjectileSpeed, int NrProjectiles, float ProjectileRange, float MaxProjectileSpreadAngle);
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:
-
-	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+public:	
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 		TSubclassOf<class AProjectileBase> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+		float ProjectileSpeed;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+		float ProjectileRange;
+		
 };

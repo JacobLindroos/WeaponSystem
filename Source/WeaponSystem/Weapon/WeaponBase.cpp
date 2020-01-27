@@ -9,6 +9,9 @@
 #include <GameFramework/Actor.h>
 #include "Components/BoxComponent.h" 
 #include "WeaponSystem/Projectile/ProjectileComponent.h"
+#include <Kismet/GameplayStatics.h>
+#include <Math/TransformNonVectorized.h>
+#include <Kismet/KismetMathLibrary.h>
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -118,6 +121,41 @@ void AWeaponBase::StopAutoFireTimer()
 	GetWorld()->GetTimerManager().ClearTimer(TimeHandler);
 }
 
+void AWeaponBase::SpawnSingleProjectile()
+{
+	if (!ProjectileComp->ProjectileClass)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Magenta, FString::FString("ProjectileComp->ProjectileClass is null"));
+		return;
+	}
+
+	FTransform MuzzleTransform = GunMesh->GetSocketTransform(MuzzleSocketName);
+	AProjectileBase* Projectile = GetWorld()->SpawnActorDeferred<AProjectileBase>(ProjectileComp->ProjectileClass, MuzzleTransform);
+	Projectile->SetInitialStats(ProjectileComp->ProjectileSpeed, ProjectileComp->ProjectileRange);
+	UGameplayStatics::FinishSpawningActor(Projectile, MuzzleTransform);
+	Projectile->FireInDirection(MuzzleTransform.GetRotation().Rotator().Vector());
+}
+
+void AWeaponBase::SpawnMultipleProjectiles(float SpreadDegree, int NrSpawnProjectiles)
+{
+	if (!ProjectileComp->ProjectileClass)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Magenta, FString::FString("ProjectileComp->ProjectileClass is null")); 
+		return;
+	}
+
+	FTransform MuzzleTransform = GunMesh->GetSocketTransform(MuzzleSocketName);
+	for (int i = 0; i < NrSpawnProjectiles; i++)
+	{
+		AProjectileBase* Projectile = GetWorld()->SpawnActorDeferred<AProjectileBase>(ProjectileComp->ProjectileClass, MuzzleTransform);
+		Projectile->SetInitialStats(ProjectileComp->ProjectileSpeed, ProjectileComp->ProjectileRange);
+		UGameplayStatics::FinishSpawningActor(Projectile, MuzzleTransform);
+
+		FVector RandomVector = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(MuzzleTransform.GetRotation().Rotator().Vector(), SpreadDegree);
+		Projectile->FireInDirection(RandomVector);
+	}
+}
+
 #pragma endregion
 
 
@@ -126,160 +164,268 @@ void AWeaponBase::StopAutoFireTimer()
 void AWeaponBase::FireSingle(bool bSpecialAttack)
 {
 	bUsingSpecialAttack = bSpecialAttack;
-	if ((LineComp != nullptr || ProjectileComp != nullptr) && RecoilComp != nullptr)
+	if (!LineComp || !ProjectileComp ||  !RecoilComp)
 	{
-		if (!bUsingSpecialAttack)
-		{
-			if (AmmoType == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
-			{
-				//ProjectileComp->Fire();
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseBullets();
-			}
-
-			if (AmmoType == EAmmoType::EClips)
-			{
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseAmmoInClip();
-			}
-		}
-		else
-		{
-			//implement SpecialFireSingle
-			if (AmmoTypeSpecial == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
-			{
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseBullets();
-			}
-
-			if (AmmoTypeSpecial == EAmmoType::EClips)
-			{
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseAmmoInClip();
-			}
-		}
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("One or more of following components is(are) missing : LineComp, ProjectileComp, RecoilComp"));
+		return;
 	}
-}
 
+	// Change FireMode and AmmoType depends on bUsingSpecialAttack value.
+	if (bUsingSpecialAttack)
+	{
+		CurrentFireMode = FireModeSpecial;
+		CurrentAmmoType = AmmoTypeSpecial;
+	}
+	else
+	{
+		CurrentFireMode = FireMode;
+		CurrentAmmoType = AmmoType;
+	}
+
+	// Check if the weapon has ammo. if so, use a ammo and return true. otherwise return false
+	if (!AmmoComp->HasAmmo(this))
+	{
+		return;
+	}
+
+	// Check FiringSystem, CurrentFireMode, bUsingSpecialAttack and then fire the weapon accordingly.
+	Fire();
+}
 
 //Spread Fire, for example Shotguns
 void AWeaponBase::FireSpread(bool bSpecialAttack)
 {
 	bUsingSpecialAttack = bSpecialAttack;
-	if (LineComp != nullptr && RecoilComp != nullptr)
+	if (!LineComp || !ProjectileComp || !RecoilComp)
 	{
-		if (!bUsingSpecialAttack)
-		{
-			if (AmmoType == EAmmoType::EShells && AmmoComp->GetShells() > 0)
-			{
-				for (int i = 0; i < AmmoComp->GetPelletsInShell(); i++)
-				{
-					LineComp->LineTrace(Player, this, HalfConeDegree);
-
-				}
-				AmmoComp->DecreseShell();
-				RecoilComp->StartRecoilTimer();
-			}
-		}
-		else
-		{
-			//implement SpecialFireSpread
-			if (AmmoTypeSpecial == EAmmoType::EShells && AmmoComp->GetShells() > 0)
-			{
-				for (int i = 0; i < AmmoComp->GetPelletsInShell() * 2; i++)
-				{
-					LineComp->LineTrace(Player, this, HalfConeDegree);
-
-				}
-				AmmoComp->DecreseShell();
-				RecoilComp->StartRecoilTimer();
-			}
-		}
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("One or more of following components is(are) missing : LineComp, ProjectileComp, RecoilComp"));
+		return;
 	}
-}
 
+	// Change FireMode and AmmoType depends on bUsingSpecialAttack value.
+	if (bUsingSpecialAttack)
+	{
+		CurrentFireMode = FireModeSpecial;
+		CurrentAmmoType = AmmoTypeSpecial;
+	}
+	else
+	{
+		CurrentFireMode = FireMode;
+		CurrentAmmoType = AmmoType;
+	}
+
+	// Check if the weapon has ammo. if so, use a ammo and return true. otherwise return false
+	if (!AmmoComp->HasAmmo(this))
+	{
+		return;
+	}
+
+	// Check FiringSystem, CurrentFireMode, bUsingSpecialAttack and then fire the weapon accordingly.
+	Fire();
+}
 
 void AWeaponBase::FireBurst()
 {
-	if (LineComp != nullptr && RecoilComp != nullptr)
+	if (!LineComp || !ProjectileComp || !RecoilComp)
 	{
-		if (!bUsingSpecialAttack)
-		{
-			if (--BurstLoop <= 0)
-			{
-				StopBurstTimer();
-			}
-
-			if (AmmoType == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
-			{
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseAmmoInClip();
-			}
-		}
-		else
-		{
-			//implement SpecialFireBurst
-			if (--BurstLoopSpecial <= 0)
-			{
-				StopBurstTimer();
-			}
-
-			if (AmmoTypeSpecial == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
-			{
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseAmmoInClip();
-			}
-		}
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("One or more of following components is(are) missing : LineComp, ProjectileComp, RecoilComp"));
+		return;
 	}
-}
 
+	// Change FireMode and AmmoType depends on bUsingSpecialAttack value.
+	if (bUsingSpecialAttack)
+	{
+		CurrentFireMode = FireModeSpecial;
+		CurrentAmmoType = AmmoTypeSpecial;
+	}
+	else
+	{
+		CurrentFireMode = FireMode;
+		CurrentAmmoType = AmmoType;
+	}
+
+	// Check if the weapon has ammo. if so, use a ammo and return true. otherwise return false
+	if (!AmmoComp->HasAmmo(this))
+	{
+		StopBurstTimer();
+		return;
+	}
+
+	// Check FiringSystem, CurrentFireMode, bUsingSpecialAttack and then fire the weapon accordingly.
+	Fire();
+}
 
 void AWeaponBase::FireAuto()
 {
-	if (LineComp != nullptr && RecoilComp != nullptr)
+	if (!LineComp || !ProjectileComp || !RecoilComp)
 	{
-		if (!bUsingSpecialAttack)
-		{
-
-			if (AmmoType == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
-			{
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseBullets();
-			}
-
-			if (AmmoType == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
-			{
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseAmmoInClip();
-			}
-		}
-		else
-		{
-			//implement SpecialFireAuto
-
-			if (AmmoTypeSpecial == EAmmoType::EBullets && AmmoComp->GetBullets() > 0)
-			{
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseBullets();
-			}
-
-			if (AmmoTypeSpecial == EAmmoType::EClips && AmmoComp->GetAmmoInClips() > 0)
-			{
-				LineComp->LineTrace(Player, this);
-				RecoilComp->StartRecoilTimer();
-				AmmoComp->DecreseAmmoInClip();
-			}
-		}
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("One or more of following components is(are) missing : LineComp, ProjectileComp, RecoilComp"));
+		return;
 	}
+
+	// Change FireMode and AmmoType depends on bUsingSpecialAttack value.
+	if (bUsingSpecialAttack)
+	{
+		CurrentFireMode = FireModeSpecial;
+		CurrentAmmoType = AmmoTypeSpecial;
+	}
+	else
+	{
+		CurrentFireMode = FireMode;
+		CurrentAmmoType = AmmoType;
+	}
+
+	// Check if the weapon has ammo. if so, use a ammo and return true. otherwise return false
+	if (!AmmoComp->HasAmmo(this))
+	{
+		StopBurstTimer();
+		return;
+	}
+
+	// Check FiringSystem, CurrentFireMode, bUsingSpecialAttack and then fire the weapon accordingly.
+	Fire();
+}
+
+void AWeaponBase::Fire()
+{
+	switch (FiringSystem)
+	{
+	case EFiringSystem::ELineTrace:
+		switch (CurrentFireMode)
+		{
+		case EFireMode::EAuto:
+			if (bUsingSpecialAttack)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("ELineTrace -> EAuto -> Special"));
+				LineComp->LineTrace(Player, this);
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("ELineTrace -> EAuto -> Primary"));
+				LineComp->LineTrace(Player, this);
+			}
+			break;
+		case EFireMode::EBurst:
+			if (bUsingSpecialAttack)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("ELineTrace -> EBurst -> Special"));
+				LineComp->LineTrace(Player, this);
+				if (--BurstLoopSpecial <= 0)
+				{
+					StopBurstTimer();
+				}
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("ELineTrace -> EBurst -> Primary"));
+				LineComp->LineTrace(Player, this);
+				if (--BurstLoop <= 0)
+				{
+					StopBurstTimer();
+				}
+			}
+			break;
+		case EFireMode::ESingle:
+			if (bUsingSpecialAttack)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("ELineTrace -> ESingle -> Special"));
+				LineComp->LineTrace(Player, this);
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("ELineTrace -> ESingle -> Primary"));
+				LineComp->LineTrace(Player, this);
+			}
+			break;
+		case EFireMode::ESpread:
+			if (bUsingSpecialAttack)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("ELineTrace -> ESpread -> Special"));
+				for (int i = 0; i < AmmoComp->GetPelletsInShell(); i++)
+				{
+					LineComp->LineTrace(Player, this, HalfConeDegree);
+				}
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("ELineTrace -> ESpread -> Primary"));
+				for (int i = 0; i < AmmoComp->GetPelletsInShell(); i++)
+				{
+					LineComp->LineTrace(Player, this, HalfConeDegree);
+				}
+			}
+			break;
+		default:
+			break;
+		}
+		break;
+	case EFiringSystem::EProjectile:
+		switch (CurrentFireMode)
+		{
+		case EFireMode::EAuto:
+			if (bUsingSpecialAttack)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("EProjectile -> EAuto -> Special"));
+				SpawnSingleProjectile();
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("EProjectile -> EAuto -> Primary"));
+				SpawnSingleProjectile();
+			}
+			break;
+		case EFireMode::EBurst:
+			if (bUsingSpecialAttack)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("EProjectile -> EBurst -> Special"));
+				SpawnSingleProjectile();
+				if (--BurstLoopSpecial <= 0)
+				{
+					StopBurstTimer();
+				}
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("EProjectile -> EBurst -> Primary"));
+				SpawnSingleProjectile();
+				if (--BurstLoop <= 0)
+				{
+					StopBurstTimer();
+				}
+			}
+			break;
+		case EFireMode::ESingle:
+			if (bUsingSpecialAttack)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("EProjectile -> ESingle -> Special"));
+				SpawnSingleProjectile();
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("EProjectile -> ESingle -> Primary"));
+				SpawnSingleProjectile();
+			}
+			break;
+		case EFireMode::ESpread:
+			if (bUsingSpecialAttack)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("EProjectile -> ESpread -> Special"));
+				SpawnMultipleProjectiles(HalfConeDegree, AmmoComp->GetPelletsInShell());
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("EProjectile -> ESpread -> Primary"));
+				SpawnMultipleProjectiles(HalfConeDegree, AmmoComp->GetPelletsInShell());
+			}
+			break;
+		default:
+			break;
+		}
+	default:
+		break;
+	}
+
+	RecoilComp->StartRecoilTimer();
 }
 
 #pragma endregion
