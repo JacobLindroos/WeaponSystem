@@ -12,12 +12,22 @@ enum class EWeaponCategory : uint8
 };
 
 UENUM()
+enum class EWeaponRarity : uint8
+{
+	ECommon			UMETA(DisplayName = "Common", ToolTip = "The most common type."),
+	EUncommon		UMETA(DisplayName = "Uncommon", ToolTip = "Not the most common type, but still pretty fucking common."),
+	ERare			UMETA(DisplayName = "Rare", ToolTip = "It's a rare weapon, not seen too often."),
+	EEpic			UMETA(DisplayName = "Epic", ToolTip = "Seen even less than a rare type. It got better stats and shit too."),
+	ELegendary		UMETA(DisplayName = "Legendary", ToolTip = "It's the best"),
+};
+
+UENUM()
 enum class EFireMode : uint8
 {
-	ESingle		UMETA(DisplayName = "Single", ToolTip = "Shoots a single bullet."),
-	EBurst		UMETA(DisplayName = "Burst", ToolTip = "Shoot multiple bullets at a time."),
-	ESpread		UMETA(DisplayName = "Spread", ToolTip = "Shoots a few bullets at a time."),
-	EAuto		UMETA(DisplayName = "Auto", ToolTip = "Shoots bullets one after another in a fast pace.")
+	ESingle			UMETA(DisplayName = "Single", ToolTip = "Shoots a single bullet."),
+	EBurst			UMETA(DisplayName = "Burst", ToolTip = "Shoot multiple bullets at a time."),
+	ESpread			UMETA(DisplayName = "Spread", ToolTip = "Shoots a few bullets at a time."),
+	EAuto			UMETA(DisplayName = "Auto", ToolTip = "Shoots bullets one after another in a fast pace.")
 };
 
 
