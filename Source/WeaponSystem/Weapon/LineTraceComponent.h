@@ -20,14 +20,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 		class TSubclassOf<UDamageType> DamageType;
 
-	UPROPERTY(EditDefaultsOnly, Category = "LineTrace")
+	UPROPERTY(EditDefaultsOnly, Category = "LineTrace", Meta = (ToolTip = "If true linetrace is displayed both from world camera and muzzlelocation of current equipped weapon"))
 		bool bUseLineTrace = false;
 
-	UFUNCTION(BlueprintCallable, Category = "LineTrace")
+	UFUNCTION(BlueprintCallable, Category = "LineTrace", Meta = (ToolTip = "Adds a line trace when firing a weapon, depending on what it hit it displays different impact effects. Also add's a muzzle effect."))
 		void LineTrace(AActor* MyOwner, AWeaponBase* Weaponfloat, float ConeHalfAngleInDegree = 0.0f);
 
+	//Adds trace effect to spread ammo
 	FVector SpreadTrace(FVector ConeDir, float ConeHalfAngleInDegree);
 
+	//Gets the time since last time the weapon is fired, used to calculate auto fire
 	float LastFireTime;
 
 protected:

@@ -19,6 +19,8 @@ ULineTraceComponent::ULineTraceComponent()
 	
 }
 
+
+//Adds a line trace to weapon when firing, muzzle effect and impact hit effect
 void ULineTraceComponent::LineTrace(AActor* MyOwner, AWeaponBase* Weapon, float ConeHalfAngleInDegree)
 {
 	AActor* Player = MyOwner;
@@ -54,6 +56,7 @@ void ULineTraceComponent::LineTrace(AActor* MyOwner, AWeaponBase* Weapon, float 
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Weapon->DefaultImpactEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
 			}
 
+			//Getting specified impact effect 
 			UParticleSystem* SelectedEffect = nullptr;
 			switch (SurfaceType)
 			{
@@ -66,6 +69,7 @@ void ULineTraceComponent::LineTrace(AActor* MyOwner, AWeaponBase* Weapon, float 
 				break;
 			}
 
+			//Shows impact effect depending on what impacted with
 			if (SelectedEffect)
 			{
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
@@ -74,18 +78,20 @@ void ULineTraceComponent::LineTrace(AActor* MyOwner, AWeaponBase* Weapon, float 
 			TracerEndPoint = Hit.ImpactPoint;
 		}
 
+		//Shows line trace from camera if true
 		if (bUseLineTrace)
 		{
-			//drawing a line symbol. the line trace
+			//drawing a line symbol. the line trace from the camera
 			DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.f, 0, 1.f);
 		}
 
-		//adds muzzle effect to weapon
+		//Adds muzzle effect to weapon
 		if (Weapon->MuzzleEffect)
 		{
 			UGameplayStatics::SpawnEmitterAttached(Weapon->MuzzleEffect, Weapon->GunMesh, Weapon->MuzzleSocketName);
 		}
 		
+		//Adds a smoke trace effect when shooting
 		if (Weapon->TracerEffect)
 		{
 			UParticleSystemComponent* TracerComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Weapon->TracerEffect, Weapon->MuzzleLocation);
@@ -95,11 +101,13 @@ void ULineTraceComponent::LineTrace(AActor* MyOwner, AWeaponBase* Weapon, float 
 			}
 		}
 
+		//Gets the time since last time the weapon is fired, used to calculate auto fire
 		LastFireTime = GetWorld()->TimeSeconds;
-
 	}
 }
 
+
+//Adds trace effect to spread ammo
 FVector ULineTraceComponent::SpreadTrace(FVector ConeDir, float ConeHalfAngleInDegree)
 {
 	return UKismetMathLibrary::RandomUnitVectorInConeInDegrees(ConeDir, ConeHalfAngleInDegree);
