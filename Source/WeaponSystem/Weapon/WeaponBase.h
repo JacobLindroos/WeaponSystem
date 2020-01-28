@@ -139,7 +139,7 @@ public:
 
 
 
-#pragma region Cool Effects and shit
+#pragma region Weapon effects when firing
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", Meta = (ToolTip = "If the gun should have an effect at the muzzle while shooting."))
 		class UParticleSystem* MuzzleEffect;
@@ -177,7 +177,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	int intilizeBurst = BurstLoop;
-
 
 
 public:
