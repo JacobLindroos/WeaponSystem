@@ -12,6 +12,7 @@
 #include <Kismet/GameplayStatics.h>
 #include <Math/TransformNonVectorized.h>
 #include <Kismet/KismetMathLibrary.h>
+#include <DrawDebugHelpers.h>
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -32,8 +33,6 @@ AWeaponBase::AWeaponBase()
 	MuzzleSocketName = "MuzzleSocket";
 	TracerTargetName = "Target";
 	RateOfFire = 600;
-	MaxImpactMultiplier = 1.0f;
-
 }
 
 
@@ -129,11 +128,36 @@ void AWeaponBase::SpawnSingleProjectile()
 		return;
 	}
 
+	// Spawn a projectile at the muzzle's location
 	FTransform MuzzleTransform = GunMesh->GetSocketTransform(MuzzleSocketName);
 	AProjectileBase* Projectile = GetWorld()->SpawnActorDeferred<AProjectileBase>(ProjectileComp->ProjectileClass, MuzzleTransform);
 	Projectile->SetInitialStats(ProjectileComp->ProjectileSpeed, ProjectileComp->ProjectileRange);
 	UGameplayStatics::FinishSpawningActor(Projectile, MuzzleTransform);
-	Projectile->FireInDirection(MuzzleTransform.GetRotation().Rotator().Vector());
+
+	// Get Player's View Location and Rotation
+	FVector EyeLocation;
+	FRotator EyeRotation;
+	AMainPlayer* MainPlayer = Cast<AMainPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	Player->GetActorEyesViewPoint(EyeLocation, EyeRotation);
+
+	// Start : Muzzle's position, End : position calculated by projectile's range straight away from player's view rotation
+	FVector StartLocation = MuzzleTransform.GetLocation();
+	FVector EndLocation = EyeLocation + EyeRotation.Vector() * ProjectileComp->ProjectileRange;
+
+	// If line trace from camera hits something, change end position to the hit position
+	FHitResult Hit;
+	FCollisionQueryParams QueryParams;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, EndLocation, ECC_Visibility, QueryParams))
+	{
+		EndLocation = Hit.ImpactPoint;
+	}
+
+	// get direction - (v2 - v1) and normalize the result
+	FVector ShotDirection = (EndLocation - StartLocation).GetSafeNormal();
+	Projectile->FireInDirection(ShotDirection);
+
+	// Debug Line
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Green, false, 5.0f, 0, 1.0f);
 }
 
 void AWeaponBase::SpawnMultipleProjectiles(float SpreadDegree, int NrSpawnProjectiles)

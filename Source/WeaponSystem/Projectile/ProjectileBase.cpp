@@ -35,37 +35,6 @@ void AProjectileBase::SetInitialStats(float ProjectileSpeed, float PjtRange)
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->bShouldBounce = true;
 	ProjectileMovementComponent->Bounciness = 0.3f;
-
-	ProjectileRange = PjtRange;
-
-	InitialLifeSpan = PjtRange / ProjectileSpeed;
-}
-
-float AProjectileBase::CalculateDamageMultiplier(float Distance)
-{
-	DRQuotient = Distance / ProjectileRange;
-
-	// if target is further away than the base damage distance.
-	if (DRQuotient >= 0.5 && DRQuotient <= 1)
-	{
-		ImpactMultiplier = (DRQuotient - 0.5) / 0.5;
-		DamageMultiplier = (1 - ImpactMultiplier);
-	}
-	// if target is closer than the base damage distance.
-	else if (DRQuotient < 0.5 && DRQuotient > 0)
-	{
-		ImpactMultiplier = abs(DRQuotient - 1);
-		DamageMultiplier = (1 + ImpactMultiplier) * (Weapon->MaxImpactMultiplier / 2);
-	}
-	return DamageMultiplier;
-}
-
-float AProjectileBase::CalculateOutputDamage(float Distance, float BaseDamage)
-{
-	DamageMultiplier = CalculateDamageMultiplier(Distance);
-
-	OutputDamage = BaseDamage * DamageMultiplier;
-	return OutputDamage;
 }
 
 void AProjectileBase::FireInDirection(const FVector& ShootDirection)
@@ -79,8 +48,6 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActo
 
 	if (OtherActor != this && OtherComponent->ComponentHasTag("Enemy"))
 	{
-		//OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
-
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("Hit: ") + OtherActor->GetName());
 
 		AMainPlayer* Player = Cast<AMainPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
@@ -90,22 +57,6 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActo
 		UGameplayStatics::ApplyPointDamage(OtherActor, 20.f, this->GetActorForwardVector(), Hit, Player->GetInstigatorController(), Player, DamageType);
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Weapon->FleshImpactEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
 
-		//if (Player)
-		//{
-		//	FVector EyeLocation;
-		//	FRotator EyeRotation;
-		//	Player->GetActorEyesViewPoint(EyeLocation, EyeRotation);
-
-		//	FVector ShotDirection = EyeRotation.Vector();
-
-		//	FVector PlayerLocation = Player->GetActorLocation();
-
-		//	float Distance = FVector::Dist(PlayerLocation, OtherActor->GetActorLocation());
-		//	OutputDamage = CalculateOutputDamage(Distance, Weapon->BaseDamage);
-
-		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FString("OutputDamage: ") + FString::SanitizeFloat(OutputDamage));
-
-		//	UGameplayStatics::ApplyPointDamage(OtherActor, OutputDamage, ShotDirection, Hit, Player->GetInstigatorController(), Player, TSubclassOf<UDamageType>());
-		//}
+		Destroy();
 	}
 }

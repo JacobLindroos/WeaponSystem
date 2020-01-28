@@ -38,27 +38,16 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		UProjectileMovementComponent* ProjectileMovementComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "ProjectileStats")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ProjectileStats", Meta = (ToolTip = "Sets the name of a specific projectile. Use in child BP only."))
 		FString name;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "ProjectileStats")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ProjectileStats", Meta = (ToolTip = "Sets what type of projectile it is. Use in child BP only."))
 		FString type;
 
-	UPROPERTY(VisibleAnywhere, Category = "ProjectileStats")
+	UPROPERTY(EditDefaultsOnly, Category = "ProjectileStats", Meta = (ToolTip = "Which weapon can use this projectile? Use in child BP only."))
 		AWeaponBase* Weapon;
-
-	UPROPERTY(VisibleAnywhere, Category = "ProjectileStats")
-		float ProjectileRange;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 		class TSubclassOf<UDamageType> DamageType;
 
-private:
-	float ImpactMultiplier;
-	float DamageMultiplier;
-	float DRQuotient;
-	float OutputDamage;
-
-	float CalculateDamageMultiplier(float Distance);
-	float CalculateOutputDamage(float Distance, float BaseDamage);
 };

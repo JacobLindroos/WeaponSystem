@@ -91,8 +91,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "GunStats|Special Attack", Meta = (ToolTip = "How many bullets that should be shot at a time. Not the same as a the spread! This is for the burst."))
 		int BurstLoopSpecial = 3;
-
-#pragma endregion
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gunstats|Special Attack", Meta = (ToolTip = "Which type of mode the gun is currently using."))
 		TEnumAsByte<EFireMode> CurrentFireMode;
@@ -100,16 +98,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gunstats|Special Attack", Meta = (ToolTip = "What type of ammo it currently has."))
 		TEnumAsByte<EAmmoType> CurrentAmmoType;
 
+#pragma endregion
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats|Reload", Meta = (ToolTip = "The time it takes in seconds to reload the weapon."))
 		float ReloadTime;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats|Projectile", Meta = (ToolTip = "Only used if the weapon uses projectiles and not linetrace. Used in projectile damage calculation."))
-		float MaxImpactMultiplier;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GunStats|Projectile", Meta = (ToolTip = "Only used if the weapon uses projectiles and not linetrace. Used in projectile damage calculation."))
-		float BaseDamage;
-
 
 	UPROPERTY(EditDefaultsOnly, Category = "GunStats", Meta = (ClampMin = 0, ToolTip = "RPM - Bullets per minute, cannot be less than 0."))
 		float RateOfFire;
