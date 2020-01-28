@@ -30,6 +30,9 @@ void URecoilComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	PController = GetWorld()->GetFirstPlayerController();
+
+	intilizeRecoil = RecoilLoop;
+	intilizeRecover = RecoverLoop;
 }
 
 

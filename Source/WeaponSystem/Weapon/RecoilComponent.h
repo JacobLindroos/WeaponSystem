@@ -14,9 +14,9 @@ UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnab
 class WEAPONSYSTEM_API URecoilComponent : public UActorComponent
 {
 	GENERATED_BODY()
-
-	int intilizeRecoil = RecoilLoop;
-	int intilizeRecover = RecoverLoop;
+	
+	int intilizeRecoil;
+	int intilizeRecover;
 
 public:	
 	
